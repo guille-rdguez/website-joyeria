@@ -1,0 +1,51 @@
+{
+  "bandas": [
+    {
+      "id": "banda-base-01",
+      "label": "Banda Base 01",
+      "file": "./bandas/banda-base-01.glb",
+      "source_file": "Banda (2).glb",
+      "notes": "Coincide con la banda base del configurador actual."
+    },
+    {
+      "id": "banda-base-02",
+      "label": "Banda Base 02",
+      "file": "./bandas/banda-base-02.glb",
+      "source_file": "Banda (3).glb",
+      "notes": "Segunda variante de banda. Requiere validacion visual de orientacion y encaje."
+    }
+  ],
+  "engastes": [
+    {
+      "id": "engaste-garras-clasico",
+      "label": "Engaste Garras Clasico",
+      "file": "./engastes/engaste-garras-clasico.glb",
+      "source_file": "garras.glb (1).glb",
+      "notes": "Engaste de garras usado como base del configurador actual."
+    },
+    {
+      "id": "engaste-leaf",
+      "label": "Engaste Leaf",
+      "file": "./engastes/engaste-leaf.glb",
+      "source_file": "leaf engaste.glb",
+      "notes": "Engaste alternativo tipo leaf/hojas. Requiere validacion visual de posicion."
+    }
+  ],
+  "piedras": [
+    {
+      "id": "piedra-diamante-base",
+      "label": "Piedra Diamante Base",
+      "file": "./piedras/piedra-diamante-base.glb",
+      "source_file": "Diamante.glb (1).glb",
+      "notes": "Piedra base del configurador actual."
+    },
+    {
+      "id": "piedra-variante-01",
+      "label": "Piedra Variante 01",
+      "file": "./piedras/piedra-variante-01.glb",
+      "source_file": "Piedra.glb",
+      "notes": "Piedra adicional. La orientacion parece distinta al diamante base y debe revisarse en escena."
+    }
+  ],
+  "duplicates_omitted": []
+}

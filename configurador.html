@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orofino Atelier | Configurador de Anillo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/configurator.css">
+</head>
+<body>
+<div class="configurator">
+  <div class="viewer-panel">
+    <canvas id="three-canvas"></canvas>
+    <div id="loading" class="loading-overlay">
+      <div class="ring-spin"></div>
+      <p id="loading-copy">Cargando piezas</p>
+    </div>
+
+    <div class="viewer-top">
+      <a class="brand" href="./index.html">oro<span>fino</span></a>
+      <div class="viewer-tools">
+        <button class="viewer-btn" id="reset-view-btn" type="button">Recentrar vista</button>
+        <div class="step-indicator" aria-hidden="true">
+          <div class="step-dot active"></div>
+          <div class="step-dot active"></div>
+          <div class="step-dot active"></div>
+          <div class="step-dot active"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="viewer-label">Arrastra suave para rotar · Scroll o pellizca para zoom · Doble clic para recentrar</div>
+  </div>
+
+  <aside class="controls-panel">
+    <div class="panel-header">
+      <div class="step-label">Diseña tu anillo</div>
+      <h1 class="step-title">Personaliza cada detalle</h1>
+      <p class="step-desc">
+        Selecciona metal, banda, engaste y piedra para explorar distintas combinaciones.
+        Los precios siguen en modo demo.
+      </p>
+    </div>
+
+    <section class="section">
+      <div class="section-title">Metal</div>
+      <div class="metal-options">
+        <button class="metal-btn active" id="btn-metal-yellow" type="button">
+          <div class="metal-swatch swatch-yellow"></div>
+          <span class="metal-name">Oro<br>Amarillo</span>
+        </button>
+        <button class="metal-btn" id="btn-metal-white" type="button">
+          <div class="metal-swatch swatch-white"></div>
+          <span class="metal-name">Oro<br>Blanco</span>
+        </button>
+        <button class="metal-btn" id="btn-metal-rose" type="button">
+          <div class="metal-swatch swatch-rose"></div>
+          <span class="metal-name">Oro<br>Rosa</span>
+        </button>
+        <button class="metal-btn" id="btn-metal-platinum" type="button">
+          <div class="metal-swatch swatch-platinum"></div>
+          <span class="metal-name">Platino</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">Bandas</div>
+        <div class="section-current" id="current-band-label">Solitario Clasico</div>
+      </div>
+      <div class="option-grid" id="band-options"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">Engaste</div>
+        <div class="section-current" id="current-setting-label">Garras Clasicas</div>
+      </div>
+      <div class="option-grid" id="setting-options"></div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <div class="section-title">Piedra</div>
+        <div class="section-current" id="current-stone-label">Diamante Base</div>
+      </div>
+      <div class="option-grid" id="stone-options"></div>
+      <p class="section-note">Las variantes nuevas pueden necesitar microajustes visuales finos.</p>
+    </section>
+
+    <section class="section">
+      <div class="section-title">Quilates (tamano de piedra)</div>
+      <div class="slider-wrap">
+        <div class="slider-row">
+          <span>0.5 ct</span>
+          <span class="slider-val" id="carat-display">1.0 ct</span>
+          <span>3.0 ct</span>
+        </div>
+        <input type="range" id="carat-slider" min="5" max="30" value="10">
+      </div>
+    </section>
+
+    <div class="summary">
+      <div class="selection-summary">
+        <div class="selection-row">
+          <span>Banda</span>
+          <strong id="summary-band">Solitario Clasico</strong>
+        </div>
+        <div class="selection-row">
+          <span>Engaste</span>
+          <strong id="summary-setting">Garras Clasicas</strong>
+        </div>
+        <div class="selection-row">
+          <span>Piedra</span>
+          <strong id="summary-stone">Diamante Base</strong>
+        </div>
+      </div>
+
+      <div class="summary-price">
+        <span class="price-label">Precio estimado</span>
+        <span class="price-value" id="price-display"><sup>$</sup>4,600</span>
+      </div>
+
+      <button class="cta-btn" id="quote-btn" type="button">Solicitar cotizacion →</button>
+      <div class="cta-sub">Envio gratuito · Garantia de por vida · Demo por correo</div>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="./assets/js/configurator.js"></script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orofino Atelier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/css/site.css">
+</head>
+<body>
+  <div class="site-shell">
+    <header class="site-header">
+      <a class="brand" href="./index.html">oro<span>fino</span></a>
+      <nav class="main-nav">
+        <a href="#coleccion">Coleccion</a>
+        <a href="#proceso">Proceso</a>
+        <a href="#configurador">Configurador</a>
+        <a href="mailto:ventas@example.com">Correo</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">Joyería personalizada · Demo editorial</div>
+          <h1>Piezas pensadas para marcar un momento, no solo para verlo.</h1>
+          <p>
+            Esta primera version del sitio propone una experiencia completa en codigo:
+            una presencia editorial para la marca y un configurador 3D que luego
+            podremos enriquecer con mas estilos de argolla, nuevas piedras y una
+            cotizacion mas pulida.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-dark" href="./configurador.html">Abrir configurador 3D</a>
+            <a class="btn btn-light" href="mailto:ventas@example.com?subject=Consulta%20desde%20la%20web">Solicitar informacion</a>
+          </div>
+        </div>
+
+        <div class="hero-stage">
+          <div class="halo halo-one"></div>
+          <div class="halo halo-two"></div>
+          <div class="hero-card">
+            <div class="card-label">Experiencia destacada</div>
+            <div class="card-title">Anillo de compromiso personalizable</div>
+            <p>
+              Metal, quilataje y visualizacion 3D en tiempo real con una narrativa de
+              marca mas cercana a una joyeria premium que a una ficha tecnica.
+            </p>
+            <a href="./configurador.html">Entrar al demo</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="feature-band" id="coleccion">
+        <div>
+          <span class="band-kicker">Coleccion</span>
+          <strong>Anillos de compromiso, alianzas y piezas a medida</strong>
+        </div>
+        <p>
+          El objetivo es que el sitio combine deseo, confianza y personalizacion:
+          buena fotografia despues, pero desde hoy con una base visual elegante y propia.
+        </p>
+      </section>
+
+      <section class="grid-section">
+        <article class="info-card">
+          <span>01</span>
+          <h2>Direccion visual</h2>
+          <p>
+            Fondo hueso, contraste carbon, acentos dorados y tipografia editorial.
+            La idea es conservar lujo sin verse rigido ni generico.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <span>02</span>
+          <h2>Configurador como centro</h2>
+          <p>
+            El configurador no vive aislado: se integra como la pieza principal del sitio
+            y luego podremos envolverlo con storytelling, testimonios y proceso.
+          </p>
+        </article>
+
+        <article class="info-card">
+          <span>03</span>
+          <h2>Escalable para nuevos GLB</h2>
+          <p>
+            Mientras llegan nuevos modelos, mantenemos esta version autocontenida.
+            Cuando ya tengamos mas estilos, convendra separar archivos y optimizar carga.
+          </p>
+        </article>
+      </section>
+
+      <section class="process" id="proceso">
+        <div class="section-heading">
+          <div class="eyebrow">Proceso</div>
+          <h2>Una base lista para crecer contigo</h2>
+        </div>
+
+        <div class="process-list">
+          <div class="process-step">
+            <strong>Descubrir</strong>
+            <p>Definimos estilo, piedra, metal y tono visual sin depender de plantillas.</p>
+          </div>
+          <div class="process-step">
+            <strong>Configurar</strong>
+            <p>El usuario interactua con una pieza en 3D y entiende mejor su eleccion.</p>
+          </div>
+          <div class="process-step">
+            <strong>Cotizar</strong>
+            <p>Por ahora via correo para mantenerlo simple; luego podremos llevarlo a backend o CRM.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="customizer-section" id="configurador">
+        <div class="customizer-copy">
+          <div class="eyebrow">Personaliza tu anillo</div>
+          <h2>La experiencia empieza aqui: metal, quilataje y una vista previa pensada para enamorar.</h2>
+          <p>
+            Rehicimos esta parte de la home para que la personalizacion exista desde la
+            primera visita. El usuario puede probar combinaciones clave y luego pasar a
+            la vista 3D completa para cerrar mejor su seleccion.
+          </p>
+        </div>
+
+        <div class="customizer-layout">
+          <div class="ring-preview-stage">
+            <div class="preview-glow preview-glow-one"></div>
+            <div class="preview-glow preview-glow-two"></div>
+
+            <svg class="ring-preview-art" viewBox="0 0 440 360" aria-hidden="true">
+              <defs>
+                <linearGradient id="metal-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop id="metal-stop-1" offset="0%" stop-color="#f4e29a"></stop>
+                  <stop id="metal-stop-2" offset="48%" stop-color="#d6b25e"></stop>
+                  <stop id="metal-stop-3" offset="100%" stop-color="#886820"></stop>
+                </linearGradient>
+                <radialGradient id="diamond-gradient" cx="50%" cy="38%" r="70%">
+                  <stop offset="0%" stop-color="#ffffff"></stop>
+                  <stop offset="45%" stop-color="#eff6ff"></stop>
+                  <stop offset="100%" stop-color="#bfd3e8"></stop>
+                </radialGradient>
+                <filter id="soft-blur">
+                  <feGaussianBlur stdDeviation="9"></feGaussianBlur>
+                </filter>
+              </defs>
+
+              <ellipse cx="220" cy="300" rx="124" ry="24" fill="rgba(24, 21, 18, 0.12)" filter="url(#soft-blur)"></ellipse>
+              <ellipse cx="220" cy="226" rx="94" ry="78" fill="none" stroke="url(#metal-gradient)" stroke-width="30" transform="rotate(-8 220 226)"></ellipse>
+              <path id="ring-prongs" d="M187 145 L203 108 M220 144 L220 98 M253 145 L237 108 M220 156 L220 120" fill="none" stroke="url(#metal-gradient)" stroke-width="12" stroke-linecap="round"></path>
+              <circle id="diamond-glow" cx="220" cy="92" r="38" fill="rgba(255, 255, 255, 0.65)" filter="url(#soft-blur)"></circle>
+              <polygon id="diamond-shape" points="220,52 250,84 236,124 220,150 204,124 190,84" fill="url(#diamond-gradient)" stroke="rgba(255,255,255,0.95)" stroke-width="3"></polygon>
+              <polyline id="diamond-facets" points="220,52 220,150 250,84 190,84 236,124 204,124 220,52" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="2"></polyline>
+            </svg>
+
+            <div class="preview-badge">
+              <span>Vista previa</span>
+              <strong id="preview-metal-label">Oro Amarillo</strong>
+              <em id="preview-carat-label">1.0 ct</em>
+            </div>
+          </div>
+
+          <div class="customizer-panel">
+            <div class="control-group">
+              <div class="control-head">
+                <span class="control-label">Metal</span>
+                <strong id="selected-metal-label">Oro Amarillo</strong>
+              </div>
+              <div class="metal-selector">
+                <button class="metal-pill is-active" type="button" data-metal="yellow" aria-pressed="true">
+                  <span class="metal-pill-swatch swatch-yellow"></span>
+                  <span>Oro Amarillo</span>
+                </button>
+                <button class="metal-pill" type="button" data-metal="white" aria-pressed="false">
+                  <span class="metal-pill-swatch swatch-white"></span>
+                  <span>Oro Blanco</span>
+                </button>
+                <button class="metal-pill" type="button" data-metal="rose" aria-pressed="false">
+                  <span class="metal-pill-swatch swatch-rose"></span>
+                  <span>Oro Rosa</span>
+                </button>
+                <button class="metal-pill" type="button" data-metal="platinum" aria-pressed="false">
+                  <span class="metal-pill-swatch swatch-platinum"></span>
+                  <span>Platino</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="control-head">
+                <span class="control-label">Quilataje</span>
+                <strong id="selected-carat-label">1.0 ct</strong>
+              </div>
+              <div class="range-legend">
+                <span>0.5 ct</span>
+                <span>3.0 ct</span>
+              </div>
+              <input class="custom-range" id="hero-carat-slider" type="range" min="5" max="30" value="10">
+            </div>
+
+            <div class="summary-shell">
+              <div class="summary-row">
+                <span>Configuracion</span>
+                <strong id="summary-config">Oro Amarillo · 1.0 ct</strong>
+              </div>
+              <div class="summary-row">
+                <span>Acabado</span>
+                <strong>Pulido espejo</strong>
+              </div>
+              <div class="summary-row summary-total">
+                <span>Precio demo</span>
+                <strong id="summary-price">$4,600</strong>
+              </div>
+            </div>
+
+            <div class="customizer-actions">
+              <a class="btn btn-dark" id="hero-quote-link" href="mailto:ventas@example.com">Solicitar por correo</a>
+              <a class="btn btn-light" href="./configurador.html">Abrir vista 3D completa</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="./assets/js/site.js"></script>
+</body>
+</html>
