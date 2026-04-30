@@ -34,9 +34,17 @@
   var metalStop1 = document.getElementById('metal-stop-1');
   var metalStop2 = document.getElementById('metal-stop-2');
   var metalStop3 = document.getElementById('metal-stop-3');
+  var diamondAura = document.getElementById('diamond-aura');
   var diamondShape = document.getElementById('diamond-shape');
-  var diamondFacets = document.getElementById('diamond-facets');
+  var diamondTable = document.getElementById('diamond-table');
+  var diamondFacetLeft = document.getElementById('diamond-facet-left');
+  var diamondFacetRight = document.getElementById('diamond-facet-right');
+  var diamondFacetBottom = document.getElementById('diamond-facet-bottom');
+  var diamondFacetLines = document.getElementById('diamond-facet-lines');
   var diamondGlow = document.getElementById('diamond-glow');
+  var diamondSparkleTop = document.getElementById('diamond-sparkle-top');
+  var diamondSparkleLeft = document.getElementById('diamond-sparkle-left');
+  var diamondSparkleRight = document.getElementById('diamond-sparkle-right');
   var metalLabel = document.getElementById('selected-metal-label');
   var caratLabel = document.getElementById('selected-carat-label');
   var previewMetalLabel = document.getElementById('preview-metal-label');
@@ -49,37 +57,67 @@
     return '$' + value.toLocaleString('en-US');
   }
 
-  function diamondPoints(size) {
-    var cx = 220;
-    var cy = 96 - (size - 28) * 0.15;
-    return [
-      cx + ',' + (cy - size),
-      (cx + size * 0.72) + ',' + (cy - size * 0.18),
-      (cx + size * 0.44) + ',' + (cy + size * 0.92),
-      cx + ',' + (cy + size * 1.45),
-      (cx - size * 0.44) + ',' + (cy + size * 0.92),
-      (cx - size * 0.72) + ',' + (cy - size * 0.18)
-    ].map(function (point) {
-      var parts = point.split(',');
-      return Number(parts[0]).toFixed(1) + ',' + Number(parts[1]).toFixed(1);
-    }).join(' ');
+  function pointString(point) {
+    return point.x.toFixed(1) + ',' + point.y.toFixed(1);
   }
 
-  function facetPolyline(size) {
+  function pathPoint(point) {
+    return point.x.toFixed(1) + ' ' + point.y.toFixed(1);
+  }
+
+  function pointsString(points) {
+    return points.map(pointString).join(' ');
+  }
+
+  function buildDiamondGeometry(size) {
     var cx = 220;
-    var cy = 96 - (size - 28) * 0.15;
+    var cy = 94 - (size - 28) * 0.16;
+
+    return {
+      cx: cx,
+      cy: cy,
+      top: { x: cx, y: cy - size * 1.12 },
+      upperRight: { x: cx + size * 0.86, y: cy - size * 0.34 },
+      right: { x: cx + size * 0.62, y: cy + size * 0.36 },
+      lowerRight: { x: cx + size * 0.28, y: cy + size * 1.06 },
+      bottom: { x: cx, y: cy + size * 1.58 },
+      lowerLeft: { x: cx - size * 0.28, y: cy + size * 1.06 },
+      left: { x: cx - size * 0.62, y: cy + size * 0.36 },
+      upperLeft: { x: cx - size * 0.86, y: cy - size * 0.34 },
+      tableTop: { x: cx, y: cy - size * 0.58 },
+      tableRight: { x: cx + size * 0.44, y: cy - size * 0.04 },
+      tableBottom: { x: cx, y: cy + size * 0.28 },
+      tableLeft: { x: cx - size * 0.44, y: cy - size * 0.04 },
+      innerRight: { x: cx + size * 0.52, y: cy + size * 0.58 },
+      innerLeft: { x: cx - size * 0.52, y: cy + size * 0.58 }
+    };
+  }
+
+  function diamondFacetPath(geometry) {
     return [
-      cx + ',' + (cy - size),
-      cx + ',' + (cy + size * 1.45),
-      (cx + size * 0.72) + ',' + (cy - size * 0.18),
-      (cx - size * 0.72) + ',' + (cy - size * 0.18),
-      (cx + size * 0.44) + ',' + (cy + size * 0.92),
-      (cx - size * 0.44) + ',' + (cy + size * 0.92),
-      cx + ',' + (cy - size)
-    ].map(function (point) {
-      var parts = point.split(',');
-      return Number(parts[0]).toFixed(1) + ',' + Number(parts[1]).toFixed(1);
-    }).join(' ');
+      'M ' + pathPoint(geometry.top) + ' L ' + pathPoint(geometry.tableTop),
+      'M ' + pathPoint(geometry.upperLeft) + ' L ' + pathPoint(geometry.tableLeft),
+      'M ' + pathPoint(geometry.upperRight) + ' L ' + pathPoint(geometry.tableRight),
+      'M ' + pathPoint(geometry.tableLeft) + ' L ' + pathPoint(geometry.tableTop) + ' L ' + pathPoint(geometry.tableRight),
+      'M ' + pathPoint(geometry.tableTop) + ' L ' + pathPoint(geometry.tableBottom),
+      'M ' + pathPoint(geometry.left) + ' L ' + pathPoint(geometry.innerLeft),
+      'M ' + pathPoint(geometry.right) + ' L ' + pathPoint(geometry.innerRight),
+      'M ' + pathPoint(geometry.tableBottom) + ' L ' + pathPoint(geometry.innerLeft) + ' L ' + pathPoint(geometry.bottom) + ' L ' + pathPoint(geometry.innerRight) + ' Z'
+    ].join(' ');
+  }
+
+  function sparklePath(cx, cy, size) {
+    return [
+      'M ' + cx.toFixed(1) + ' ' + (cy - size).toFixed(1),
+      'L ' + (cx + size * 0.22).toFixed(1) + ' ' + (cy - size * 0.22).toFixed(1),
+      'L ' + (cx + size).toFixed(1) + ' ' + cy.toFixed(1),
+      'L ' + (cx + size * 0.22).toFixed(1) + ' ' + (cy + size * 0.22).toFixed(1),
+      'L ' + cx.toFixed(1) + ' ' + (cy + size).toFixed(1),
+      'L ' + (cx - size * 0.22).toFixed(1) + ' ' + (cy + size * 0.22).toFixed(1),
+      'L ' + (cx - size).toFixed(1) + ' ' + cy.toFixed(1),
+      'L ' + (cx - size * 0.22).toFixed(1) + ' ' + (cy - size * 0.22).toFixed(1),
+      'Z'
+    ].join(' ');
   }
 
   function buildMailto(total) {
@@ -107,15 +145,58 @@
     var metal = METALS[state.metal];
     var total = metal.basePrice + Math.round(state.carat * 800);
     var size = 24 + ((state.carat - 0.5) / 2.5) * 20;
-    var cy = 96 - (size - 28) * 0.15;
+    var geometry = buildDiamondGeometry(size);
+    var sparkleScale = 0.9 + ((state.carat - 0.5) / 2.5) * 0.35;
 
     metalStop1.setAttribute('stop-color', metal.gradient[0]);
     metalStop2.setAttribute('stop-color', metal.gradient[1]);
     metalStop3.setAttribute('stop-color', metal.gradient[2]);
-    diamondShape.setAttribute('points', diamondPoints(size));
-    diamondFacets.setAttribute('points', facetPolyline(size));
-    diamondGlow.setAttribute('r', (size * 1.2).toFixed(1));
-    diamondGlow.setAttribute('cy', cy.toFixed(1));
+    diamondShape.setAttribute('points', pointsString([
+      geometry.top,
+      geometry.upperRight,
+      geometry.right,
+      geometry.lowerRight,
+      geometry.bottom,
+      geometry.lowerLeft,
+      geometry.left,
+      geometry.upperLeft
+    ]));
+    diamondTable.setAttribute('points', pointsString([
+      geometry.tableTop,
+      geometry.tableRight,
+      geometry.tableBottom,
+      geometry.tableLeft
+    ]));
+    diamondFacetLeft.setAttribute('points', pointsString([
+      geometry.upperLeft,
+      geometry.tableLeft,
+      geometry.tableBottom,
+      geometry.innerLeft,
+      geometry.left
+    ]));
+    diamondFacetRight.setAttribute('points', pointsString([
+      geometry.tableRight,
+      geometry.upperRight,
+      geometry.right,
+      geometry.innerRight,
+      geometry.tableBottom
+    ]));
+    diamondFacetBottom.setAttribute('points', pointsString([
+      geometry.tableBottom,
+      geometry.innerRight,
+      geometry.bottom,
+      geometry.innerLeft
+    ]));
+    diamondFacetLines.setAttribute('d', diamondFacetPath(geometry));
+    diamondAura.setAttribute('r', (size * 1.55).toFixed(1));
+    diamondAura.setAttribute('cy', geometry.cy.toFixed(1));
+    diamondAura.setAttribute('opacity', (0.34 + sparkleScale * 0.14).toFixed(2));
+    diamondGlow.setAttribute('r', (size * 1.28).toFixed(1));
+    diamondGlow.setAttribute('cy', geometry.cy.toFixed(1));
+    diamondGlow.setAttribute('opacity', (0.54 + sparkleScale * 0.18).toFixed(2));
+    diamondSparkleTop.setAttribute('d', sparklePath(geometry.cx + size * 0.96, geometry.cy - size * 0.82, size * (0.2 * sparkleScale)));
+    diamondSparkleLeft.setAttribute('d', sparklePath(geometry.cx - size * 1.02, geometry.cy - size * 0.02, size * (0.14 * sparkleScale)));
+    diamondSparkleRight.setAttribute('d', sparklePath(geometry.cx + size * 1.08, geometry.cy + size * 0.42, size * (0.16 * sparkleScale)));
 
     metalLabel.textContent = metal.label;
     caratLabel.textContent = state.carat.toFixed(1) + ' ct';

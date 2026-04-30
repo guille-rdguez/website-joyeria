@@ -44,7 +44,7 @@
         caption: 'Clasico',
         price: 0,
         file: './assets/models/engastes/engaste-garras-clasico.glb',
-        transform: { scale: 0.1, rotation: [0, 0, 0], position: [0, 0, 0] }
+        transform: { scale: 0.1, rotation: [0, 0, 0], position: [0, 0, 0], anchorBottom: 6.214 }
       },
       {
         id: 'engaste-leaf',
@@ -52,7 +52,7 @@
         caption: 'Nuevo',
         price: 420,
         file: './assets/models/engastes/engaste-leaf.glb',
-        transform: { scale: 0.1, rotation: [-Math.PI / 2, 0, 0], position: [0, 0, 0] }
+        transform: { scale: 0.1, rotation: [-Math.PI / 2, 0, 0], position: [0, 0, 0], anchorBottom: 6.214, stoneOffset: [0, -0.20, 0], stoneScale: 1.28 }
       }
     ],
     piedras: [
@@ -123,13 +123,13 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.physicallyCorrectLights = true;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.96;
+  renderer.toneMappingExposure = 1.1;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   var scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xd8d1c7);
+  scene.background = new THREE.Color(0xb0b0b0);
 
   var camera = new THREE.PerspectiveCamera(32, 1, 0.01, 500);
   var controls = new THREE.OrbitControls(camera, canvas);
@@ -138,22 +138,24 @@
 
   var shadowPlane = new THREE.Mesh(
     new THREE.PlaneGeometry(8, 8),
-    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.16 })
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.55 })
   );
   shadowPlane.rotation.x = -Math.PI / 2;
   shadowPlane.position.set(0, -1.28, 0);
   shadowPlane.receiveShadow = true;
   scene.add(shadowPlane);
 
+  // PMREM env map for metal materials only — neutral warm tones so gold looks gold.
+  // Vivid studio colors live exclusively in diamondEnvRaw (used by the diamond shader).
   var pmrem = new THREE.PMREMGenerator(renderer);
   var envScene = new THREE.Scene();
   [
-    [[70, 10, 20], 0xd8cec1],
-    [[-70, 14, -18], 0xc3ced8],
-    [[0, 80, 18], 0xf7f5f1],
-    [[0, -70, 0], 0x262220],
-    [[0, 8, 70], 0xbcae9d],
-    [[0, 0, -70], 0x6f6459]
+    [[70,  10,  20],  0xd8cec1],  // warm white — key side
+    [[-70, 14, -18],  0xc3ced8],  // cool white — fill side
+    [[0,   80,  18],  0xf7f5f1],  // overhead: bright neutral
+    [[0,  -70,   0],  0x262220],  // floor: dark charcoal
+    [[0,    8,  70],  0xbcae9d],  // front: warm neutral
+    [[0,    0, -70],  0x6f6459],  // back: mid warm brown
   ].forEach(function (face) {
     var mesh = new THREE.Mesh(
       new THREE.PlaneGeometry(160, 160),
@@ -165,34 +167,99 @@
   });
   scene.environment = pmrem.fromScene(envScene, 0).texture;
 
-  scene.add(new THREE.AmbientLight(0xf7f2ea, 0.14));
-  scene.add(new THREE.HemisphereLight(0xf5f3ef, 0x8f8173, 0.24));
+  // Diamond env map — spots sized to cover large facets (signature stone) without
+  // blending into a white mass. Dark blue base prevents absolute-black reflections.
+  var diamondEnvRaw = (function () {
+    var c = document.createElement('canvas');
+    c.width = 512; c.height = 512;
+    var ctx = c.getContext('2d');
+    // Dark blue-violet base — no pure black so large facets always have some color
+    ctx.fillStyle = '#08080f';
+    ctx.fillRect(0, 0, 512, 512);
+    [
+      // White hot spots — vivid cores, steep falloff to keep separation
+      { x: 90,  y: 90,  r: 80,  col: '255,255,255' },
+      { x: 422, y: 90,  r: 70,  col: '255,255,255' },
+      { x: 256, y: 34,  r: 62,  col: '255,255,255' },
+      { x: 90,  y: 422, r: 58,  col: '255,255,255' },
+      { x: 422, y: 422, r: 54,  col: '255,255,255' },
+      // Cyan
+      { x: 298, y: 98,  r: 88,  col: '0,225,255'   },
+      { x: 118, y: 358, r: 76,  col: '0,195,240'   },
+      { x: 430, y: 260, r: 68,  col: '30,210,255'  },
+      // Orange / gold
+      { x: 338, y: 458, r: 84,  col: '255,155,0'   },
+      { x: 168, y: 238, r: 72,  col: '255,115,10'  },
+      { x: 460, y: 390, r: 62,  col: '255,140,0'   },
+      // Magenta / pink
+      { x: 85,  y: 278, r: 80,  col: '255,65,160'  },
+      { x: 375, y: 428, r: 68,  col: '215,45,195'  },
+      // Sky blue
+      { x: 178, y: 148, r: 76,  col: '95,180,255'  },
+      { x: 448, y: 148, r: 64,  col: '85,160,245'  },
+      // Violet / indigo
+      { x: 338, y: 318, r: 72,  col: '75,55,240'   },
+      { x: 200, y: 480, r: 60,  col: '110,40,220'  },
+      // Green
+      { x: 198, y: 398, r: 66,  col: '30,210,75'   },
+      // Red
+      { x: 460, y: 370, r: 60,  col: '255,30,50'   },
+    ].forEach(function (l) {
+      var g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r);
+      g.addColorStop(0,    'rgba(' + l.col + ',1)');
+      g.addColorStop(0.18, 'rgba(' + l.col + ',0.85)');
+      g.addColorStop(0.45, 'rgba(' + l.col + ',0.35)');
+      g.addColorStop(0.72, 'rgba(' + l.col + ',0.08)');
+      g.addColorStop(1,    'rgba(' + l.col + ',0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, 512, 512);
+    });
+    var tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }());
 
-  var key = new THREE.DirectionalLight(0xfff4e8, 1.6);
-  key.position.set(18, 34, 28);
+  // RenderTarget captures the scene (without diamond) for screen-space refraction
+  var sceneRenderTarget = new THREE.WebGLRenderTarget(512, 512, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBFormat
+  });
+
+  // Active diamond ShaderMaterial instances — updated each frame with uSceneTexture
+  var diamondShaderMaterials = [];
+
+  // Luces de escena — todas neutras/blancas para no teñir el metal.
+  // Los colores de estudio (cyan, naranja, magenta) viven solo en el env map
+  // y en diamondEnvRaw: afectan reflexiones/refracciones sin pintar el metal.
+
+  // AMBIENT — base mínima
+  scene.add(new THREE.AmbientLight(0xffffff, 0.18));
+
+  // KEY — luz principal, blanco puro, define forma y brillos nítidos
+  var key = new THREE.DirectionalLight(0xffffff, 1.5);
+  key.position.set(6, 8, 4);
   key.castShadow = true;
   key.shadow.mapSize.width = 2048;
   key.shadow.mapSize.height = 2048;
-  key.shadow.camera.near = 1;
-  key.shadow.camera.far = 200;
-  key.shadow.camera.left = -30;
-  key.shadow.camera.right = 30;
-  key.shadow.camera.top = 30;
-  key.shadow.camera.bottom = -30;
+  key.shadow.camera.near = 0.5;
+  key.shadow.camera.far = 80;
+  key.shadow.camera.left = -10;
+  key.shadow.camera.right = 10;
+  key.shadow.camera.top = 10;
+  key.shadow.camera.bottom = -10;
   key.shadow.bias = -0.0005;
   scene.add(key);
 
-  var fill = new THREE.DirectionalLight(0xd6dee8, 0.32);
-  fill.position.set(-24, 10, -18);
+  // FILL — blanco-frío muy suave, rellena sombras sin teñir
+  var fill = new THREE.DirectionalLight(0xeef4ff, 0.38);
+  fill.position.set(-5, 3, 3);
   scene.add(fill);
 
-  var rim = new THREE.PointLight(0xe7d5b0, 0.7, 120);
-  rim.position.set(22, 10, -26);
+  // RIM — blanco-cálido muy suave, separa el anillo del fondo oscuro
+  var rim = new THREE.DirectionalLight(0xfff6ee, 0.3);
+  rim.position.set(-8, 1, -8);
   scene.add(rim);
-
-  var top = new THREE.PointLight(0xffffff, 0.38, 90);
-  top.position.set(0, 48, 8);
-  scene.add(top);
 
   var loader = new THREE.GLTFLoader();
   var modelCache = {};
@@ -242,22 +309,123 @@
     });
   }
 
-  function makeDiamondMat() {
-    return new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      metalness: 0,
-      roughness: 0.02,
-      envMapIntensity: 2.4,
-      transmission: 0.22,
-      thickness: 0.42,
-      ior: 2.15,
-      reflectivity: 1,
-      clearcoat: 0.28,
-      clearcoatRoughness: 0.02,
-      transparent: true,
-      opacity: 0.96,
+  var DIAMOND_VERT = `
+varying vec3 vWorldNormal;
+varying vec3 vViewNormal;
+varying vec3 vViewPos;
+varying vec3 vWorldViewDir;
+varying vec4 vClipPos;
+
+void main() {
+  vec4 worldPos = modelMatrix * vec4(position, 1.0);
+  // World-space normal (valid for uniformly scaled objects)
+  vWorldNormal = normalize(mat3(modelMatrix) * normal);
+  vec4 viewPos = viewMatrix * worldPos;
+  vViewPos     = viewPos.xyz;
+  // View-space normal uses Three.js normalMatrix (transpose-inverse of modelViewMatrix)
+  vViewNormal  = normalize(normalMatrix * normal);
+  // World-space direction from vertex toward camera
+  vWorldViewDir = normalize(cameraPosition - worldPos.xyz);
+  gl_Position  = projectionMatrix * viewPos;
+  vClipPos     = gl_Position;
+}
+`;
+
+  var DIAMOND_FRAG = `
+#define PI 3.14159265359
+
+uniform sampler2D uSceneTexture;    // Scene without diamond (background for refraction)
+uniform sampler2D uEnvMap;          // High-contrast equirectangular env map
+uniform float     uIOR;             // Index of refraction (2.417 = diamond, 1.5 = glass)
+uniform float     uThickness;       // Screen-space refraction strength
+uniform float     uChromaticAberration; // Blue refracts more than red (dispersion / fire)
+uniform float     uEnvMapIntensity; // Reflection brightness multiplier
+uniform float     uFresnelPower;    // Schlick exponent (5 = physically accurate)
+
+varying vec3 vWorldNormal;
+varying vec3 vViewNormal;
+varying vec3 vViewPos;
+varying vec3 vWorldViewDir;
+varying vec4 vClipPos;
+
+// Sample equirectangular 2D texture from a 3D direction vector
+vec3 sampleEquirect(sampler2D map, vec3 dir) {
+  float u = atan(dir.z, dir.x) / (2.0 * PI) + 0.5;
+  float v = asin(clamp(dir.y, -1.0, 1.0)) / PI + 0.5;
+  return texture2D(map, vec2(u, v)).rgb;
+}
+
+// Schlick approximation: F0 derived from IOR, rises to 1 at grazing angle
+float schlickFresnel(float cosTheta, float ior) {
+  float F0 = pow((1.0 - ior) / (1.0 + ior), 2.0);
+  return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), uFresnelPower);
+}
+
+void main() {
+  vec3 N_w = normalize(vWorldNormal);
+  vec3 N_v = normalize(vViewNormal);
+  // Back faces: flip normals so exit refraction behaves correctly (TIR on pavilion)
+  if (!gl_FrontFacing) { N_w = -N_w; N_v = -N_v; }
+
+  vec3 V_w = normalize(vWorldViewDir);
+  // View-space view direction: camera is at origin, fragment is at vViewPos
+  vec3 V_v = normalize(-vViewPos);
+
+  // --- Screen UV: convert clip-space position to 0..1 range ---
+  vec2 screenUV = (vClipPos.xy / vClipPos.w) * 0.5 + 0.5;
+
+  // --- Screen-space refraction ---
+  // eta = n_incoming / n_outgoing
+  float eta = gl_FrontFacing ? (1.0 / uIOR) : uIOR;
+  vec3 rDir = refract(-V_v, N_v, eta);
+  // refract() returns vec3(0) on total internal reflection — zero offset in that case
+  float validRefract = step(0.001, length(rDir));
+  vec2 refractOffset = rDir.xy * uThickness * validRefract;
+
+  // --- Chromatic aberration: blue light refracts more than red (like a real prism) ---
+  float ca = uChromaticAberration * 0.5;
+  float bkgR = texture2D(uSceneTexture, clamp(screenUV + refractOffset * (1.0 - ca), 0.002, 0.998)).r;
+  float bkgG = texture2D(uSceneTexture, clamp(screenUV + refractOffset,              0.002, 0.998)).g;
+  float bkgB = texture2D(uSceneTexture, clamp(screenUV + refractOffset * (1.0 + ca), 0.002, 0.998)).b;
+  vec3 refractColor = vec3(bkgR, bkgG, bkgB);
+
+  // --- Reflection with chromatic dispersion ---
+  // Offset the reflection direction slightly per channel to simulate prism dispersion
+  vec3 rD  = reflect(-V_w, N_w);
+  float cd = uChromaticAberration * 0.06;
+  // Perturb along a tangent direction so R/B spread apart in the env map
+  vec3 tang = normalize(cross(N_w, vec3(0.0, 1.0, 0.001)));
+  vec3 reflR = sampleEquirect(uEnvMap, normalize(rD + tang *  cd));
+  vec3 reflG = sampleEquirect(uEnvMap, rD);
+  vec3 reflB = sampleEquirect(uEnvMap, normalize(rD - tang *  cd));
+  // Tiny ambient floor prevents pure-black on large facets without washing out colors
+  vec3 reflectColor = (vec3(reflR.r, reflG.g, reflB.b) + vec3(0.012, 0.012, 0.02)) * uEnvMapIntensity;
+
+  // --- Fresnel blend: grazing angles fully reflective ---
+  // Floor of 0.18 ensures visible color even on face-on facets against a dark background
+  float F = max(schlickFresnel(max(dot(V_w, N_w), 0.0), uIOR), 0.18);
+
+  gl_FragColor = vec4(mix(refractColor, reflectColor, F), 1.0);
+}
+`;
+
+  function makeDiamondShader() {
+    var mat = new THREE.ShaderMaterial({
+      vertexShader: DIAMOND_VERT,
+      fragmentShader: DIAMOND_FRAG,
+      uniforms: {
+        uSceneTexture:        { value: null },
+        uEnvMap:              { value: diamondEnvRaw },
+        uIOR:                 { value: 2.417 },
+        uThickness:           { value: 0.42 },
+        uChromaticAberration: { value: 0.22 },
+        uEnvMapIntensity:     { value: 11.0 },
+        uFresnelPower:        { value: 4.0 }
+      },
       side: THREE.DoubleSide
     });
+    diamondShaderMaterials.push(mat);
+    return mat;
   }
 
   function applyMaterial(group, mat, receiveShadow) {
@@ -288,21 +456,11 @@
     });
   }
 
-  function applyTransform(object, option, category) {
+  function applyTransform(object, option) {
     var transform = option.transform || {};
-    var scale = transform.scale || 0.1;
-    var rotation = transform.rotation || [0, 0, 0];
-    var position = transform.position || [0, 0, 0];
-
-    object.scale.setScalar(scale);
-    object.rotation.set(rotation[0], rotation[1], rotation[2]);
-    object.position.set(position[0], position[1], position[2]);
-
-    if (category === 'piedras') {
-      var caratScale = scale - 0.02 + state.carat * 0.02;
-      object.scale.setScalar(caratScale);
-      object.position.y = position[1] + (transform.anchorBottom || 10.7) * (scale - caratScale);
-    }
+    object.scale.setScalar(transform.scale || 0.1);
+    object.rotation.set.apply(object.rotation, transform.rotation || [0, 0, 0]);
+    object.position.set.apply(object.position, transform.position || [0, 0, 0]);
   }
 
   function applyState() {
@@ -313,16 +471,37 @@
     applyMaterial(currentMeshes.banda, metalMaterial, true);
     applyMaterial(currentMeshes.engaste, metalMaterial, true);
 
+    // Dispose previous diamond shaders and clear tracking array
+    diamondShaderMaterials.forEach(function (m) { m.dispose(); });
+    diamondShaderMaterials.length = 0;
+
+    // Apply custom diamond shader to every mesh in the stone group
+    var stoneMeshes = [];
     currentMeshes.piedra.traverse(function (child) {
-      if (!child.isMesh) return;
-      child.material = makeDiamondMat();
-      child.castShadow = true;
-      child.receiveShadow = false;
+      if (child.isMesh) stoneMeshes.push(child);
+    });
+    stoneMeshes.forEach(function (mesh) {
+      mesh.material = makeDiamondShader();
+      mesh.castShadow = false;
+      mesh.receiveShadow = false;
     });
 
-    applyTransform(currentMeshes.banda, selectedOption('bandas'), 'bandas');
-    applyTransform(currentMeshes.engaste, selectedOption('engastes'), 'engastes');
-    applyTransform(currentMeshes.piedra, selectedOption('piedras'), 'piedras');
+    applyTransform(currentMeshes.banda, selectedOption('bandas'));
+    applyTransform(currentMeshes.engaste, selectedOption('engastes'));
+    applyTransform(currentMeshes.piedra, selectedOption('piedras'));
+
+    // Apply per-engaste stone adjustments (offset + optional scale multiplier)
+    var engT = selectedOption('engastes').transform || {};
+    if (engT.stoneOffset) {
+      currentMeshes.piedra.position.x += engT.stoneOffset[0];
+      currentMeshes.piedra.position.y += engT.stoneOffset[1];
+      currentMeshes.piedra.position.z += engT.stoneOffset[2];
+    }
+    if (engT.stoneScale) {
+      currentMeshes.piedra.scale.multiplyScalar(engT.stoneScale);
+    }
+
+    ringGroup.scale.setScalar(Math.pow(state.carat, 1 / 3));
 
     centerSelection();
     updateSummary();
@@ -490,8 +669,11 @@
 
   function resize() {
     var parent = canvas.parentElement;
-    renderer.setSize(parent.clientWidth, parent.clientHeight, false);
-    camera.aspect = parent.clientWidth / parent.clientHeight;
+    var w = parent.clientWidth, h = parent.clientHeight;
+    renderer.setSize(w, h, false);
+    var dpr = renderer.getPixelRatio();
+    sceneRenderTarget.setSize(Math.floor(w * dpr), Math.floor(h * dpr));
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
     controls.update();
   }
@@ -505,7 +687,26 @@
       ringBasePosition.z
     );
     controls.update();
-    renderer.render(scene, camera);
+
+    if (currentMeshes.piedra && diamondShaderMaterials.length > 0) {
+      // Pass 1: render scene WITHOUT diamond → captures background for refraction UV
+      currentMeshes.piedra.visible = false;
+      renderer.setRenderTarget(sceneRenderTarget);
+      renderer.render(scene, camera);
+
+      // Feed captured background to all active diamond shader materials
+      var bgTex = sceneRenderTarget.texture;
+      for (var i = 0; i < diamondShaderMaterials.length; i++) {
+        diamondShaderMaterials[i].uniforms.uSceneTexture.value = bgTex;
+      }
+
+      // Pass 2: render full scene WITH diamond using the captured background
+      currentMeshes.piedra.visible = true;
+      renderer.setRenderTarget(null);
+      renderer.render(scene, camera);
+    } else {
+      renderer.render(scene, camera);
+    }
   }
 
   function initMetalButtons() {

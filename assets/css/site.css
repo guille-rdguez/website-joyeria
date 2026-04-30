@@ -343,6 +343,7 @@ a {
 
 .ring-preview-stage {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
   min-height: 470px;
   padding: 28px;
@@ -351,6 +352,20 @@ a {
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.92), transparent 38%),
     linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(239, 229, 216, 0.85));
+}
+
+.ring-preview-stage::after {
+  content: '';
+  position: absolute;
+  top: 12%;
+  right: 6%;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 68%);
+  filter: blur(28px);
+  opacity: 0.68;
+  pointer-events: none;
 }
 
 .preview-glow {
@@ -381,6 +396,77 @@ a {
   width: 100%;
   max-width: 560px;
   margin: 10px auto 0;
+  transform: translateY(4px);
+}
+
+#diamond-aura {
+  opacity: 0.56;
+}
+
+#diamond-glow {
+  opacity: 0.76;
+}
+
+.diamond-shell {
+  transform-origin: 220px 110px;
+  animation: diamond-float 6.8s ease-in-out infinite;
+}
+
+#diamond-table,
+#diamond-facet-left,
+#diamond-facet-right,
+#diamond-facet-bottom {
+  mix-blend-mode: screen;
+}
+
+#diamond-facet-lines {
+  opacity: 0.9;
+}
+
+.diamond-sparkle {
+  fill: rgba(255, 255, 255, 0.96);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sparkle-pulse 5.2s ease-in-out infinite;
+}
+
+.diamond-sparkle-left {
+  animation-delay: 0.9s;
+}
+
+.diamond-sparkle-right {
+  animation-delay: 1.8s;
+}
+
+@keyframes diamond-float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-6px) scale(1.01);
+  }
+}
+
+@keyframes sparkle-pulse {
+  0%,
+  18%,
+  100% {
+    opacity: 0;
+    transform: scale(0.82) rotate(0deg);
+  }
+
+  8% {
+    opacity: 0.98;
+    transform: scale(1.08) rotate(10deg);
+  }
+
+  12% {
+    opacity: 0.52;
+    transform: scale(0.92) rotate(-6deg);
+  }
 }
 
 .preview-badge {
@@ -619,5 +705,16 @@ a {
     left: 18px;
     right: 18px;
     bottom: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .diamond-shell,
+  .diamond-sparkle {
+    animation: none;
+  }
+
+  .diamond-sparkle {
+    opacity: 0.45;
   }
 }

@@ -34,8 +34,7 @@ body {
 .viewer-panel {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 34%, rgba(250, 248, 244, 0.98) 0%, rgba(233, 228, 220, 0.94) 28%, rgba(203, 195, 184, 0.92) 72%, rgba(177, 168, 157, 0.95) 100%);
+  background: #b0b0b0;
 }
 
 #three-canvas {
@@ -55,8 +54,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background:
-    radial-gradient(circle at 50% 34%, rgba(250, 248, 244, 0.98) 0%, rgba(233, 228, 220, 0.94) 28%, rgba(203, 195, 184, 0.92) 72%, rgba(177, 168, 157, 0.95) 100%);
+  background: #b0b0b0;
 }
 
 .ring-spin {

@@ -138,22 +138,56 @@
                   <stop id="metal-stop-2" offset="48%" stop-color="#d6b25e"></stop>
                   <stop id="metal-stop-3" offset="100%" stop-color="#886820"></stop>
                 </linearGradient>
-                <radialGradient id="diamond-gradient" cx="50%" cy="38%" r="70%">
+                <radialGradient id="diamond-gradient" cx="50%" cy="32%" r="78%">
                   <stop offset="0%" stop-color="#ffffff"></stop>
-                  <stop offset="45%" stop-color="#eff6ff"></stop>
-                  <stop offset="100%" stop-color="#bfd3e8"></stop>
+                  <stop offset="30%" stop-color="#f8fcff"></stop>
+                  <stop offset="64%" stop-color="#dcecff"></stop>
+                  <stop offset="100%" stop-color="#abc4de"></stop>
                 </radialGradient>
+                <linearGradient id="diamond-core-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"></stop>
+                  <stop offset="50%" stop-color="#dfeeff" stop-opacity="0.95"></stop>
+                  <stop offset="100%" stop-color="#bcd6ef" stop-opacity="0.9"></stop>
+                </linearGradient>
+                <linearGradient id="diamond-left-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"></stop>
+                  <stop offset="100%" stop-color="#adcee9" stop-opacity="0.62"></stop>
+                </linearGradient>
+                <linearGradient id="diamond-right-gradient" x1="100%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff" stop-opacity="0.94"></stop>
+                  <stop offset="100%" stop-color="#9fc2e2" stop-opacity="0.55"></stop>
+                </linearGradient>
+                <linearGradient id="diamond-bottom-gradient" x1="50%" y1="0%" x2="50%" y2="100%">
+                  <stop offset="0%" stop-color="#ecf7ff" stop-opacity="0.82"></stop>
+                  <stop offset="100%" stop-color="#86abcb" stop-opacity="0.72"></stop>
+                </linearGradient>
                 <filter id="soft-blur">
                   <feGaussianBlur stdDeviation="9"></feGaussianBlur>
+                </filter>
+                <filter id="diamond-glint" x="-50%" y="-50%" width="200%" height="200%">
+                  <feDropShadow dx="0" dy="0" stdDeviation="3" flood-color="#ffffff" flood-opacity="0.9"></feDropShadow>
+                  <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#dcecff" flood-opacity="0.55"></feDropShadow>
                 </filter>
               </defs>
 
               <ellipse cx="220" cy="300" rx="124" ry="24" fill="rgba(24, 21, 18, 0.12)" filter="url(#soft-blur)"></ellipse>
               <ellipse cx="220" cy="226" rx="94" ry="78" fill="none" stroke="url(#metal-gradient)" stroke-width="30" transform="rotate(-8 220 226)"></ellipse>
               <path id="ring-prongs" d="M187 145 L203 108 M220 144 L220 98 M253 145 L237 108 M220 156 L220 120" fill="none" stroke="url(#metal-gradient)" stroke-width="12" stroke-linecap="round"></path>
+              <circle id="diamond-aura" cx="220" cy="92" r="54" fill="rgba(255, 255, 255, 0.24)" filter="url(#soft-blur)"></circle>
               <circle id="diamond-glow" cx="220" cy="92" r="38" fill="rgba(255, 255, 255, 0.65)" filter="url(#soft-blur)"></circle>
-              <polygon id="diamond-shape" points="220,52 250,84 236,124 220,150 204,124 190,84" fill="url(#diamond-gradient)" stroke="rgba(255,255,255,0.95)" stroke-width="3"></polygon>
-              <polyline id="diamond-facets" points="220,52 220,150 250,84 190,84 236,124 204,124 220,52" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="2"></polyline>
+              <g class="diamond-shell" filter="url(#diamond-glint)">
+                <polygon id="diamond-shape" points="220,52 250,84 236,124 220,150 204,124 190,84" fill="url(#diamond-gradient)" stroke="rgba(255,255,255,0.96)" stroke-width="3"></polygon>
+                <polygon id="diamond-table" points="220,65 234,84 220,104 206,84" fill="url(#diamond-core-gradient)" opacity="0.95"></polygon>
+                <polygon id="diamond-facet-left" points="190,84 206,84 220,114 198,116" fill="url(#diamond-left-gradient)" opacity="0.82"></polygon>
+                <polygon id="diamond-facet-right" points="234,84 250,84 242,116 220,114" fill="url(#diamond-right-gradient)" opacity="0.8"></polygon>
+                <polygon id="diamond-facet-bottom" points="220,104 242,116 220,150 198,116" fill="url(#diamond-bottom-gradient)" opacity="0.74"></polygon>
+                <path id="diamond-facet-lines" d="M220 52 L220 150 M190 84 L250 84 M206 84 L234 84 M220 65 L220 104 M206 84 L198 116 M234 84 L242 116 M220 104 L198 116 M220 104 L242 116" fill="none" stroke="rgba(255,255,255,0.76)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </g>
+              <g class="diamond-sparkles">
+                <path id="diamond-sparkle-top" class="diamond-sparkle diamond-sparkle-top" d="M260 40 L262.2 47.8 L270 50 L262.2 52.2 L260 60 L257.8 52.2 L250 50 L257.8 47.8 Z"></path>
+                <path id="diamond-sparkle-left" class="diamond-sparkle diamond-sparkle-left" d="M176 76 L177.3 80.7 L182 82 L177.3 83.3 L176 88 L174.7 83.3 L170 82 L174.7 80.7 Z"></path>
+                <path id="diamond-sparkle-right" class="diamond-sparkle diamond-sparkle-right" d="M280 106 L281.5 111.5 L287 113 L281.5 114.5 L280 120 L278.5 114.5 L273 113 L278.5 111.5 Z"></path>
+              </g>
             </svg>
 
             <div class="preview-badge">
