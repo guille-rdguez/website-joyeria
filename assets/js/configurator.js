@@ -2,6 +2,9 @@
   'use strict';
 
   var QUOTE_EMAIL = 'ventas@example.com';
+  var ASSET_VERSION = 'diamond-hdri-1';
+  var STUDIO_HDR_PATH = './assets/hdr/studio_jewelry.hdr';
+
   var METAL_LABELS = {
     yellow: 'Oro Amarillo',
     white: 'Oro Blanco',
@@ -9,11 +12,65 @@
     platinum: 'Platino'
   };
 
-  var METAL = {
-    yellow:   { color: 0xd6b25e, roughness: 0.24, envMapIntensity: 1.35, clearcoat: 0.06, clearcoatRoughness: 0.18 },
-    white:    { color: 0xd8dbe1, roughness: 0.20, envMapIntensity: 1.5, clearcoat: 0.05, clearcoatRoughness: 0.14 },
-    rose:     { color: 0xd2a089, roughness: 0.26, envMapIntensity: 1.25, clearcoat: 0.06, clearcoatRoughness: 0.18 },
-    platinum: { color: 0xc7ced6, roughness: 0.18, envMapIntensity: 1.6, clearcoat: 0.05, clearcoatRoughness: 0.12 }
+  function versionedAsset(path) {
+    return path + '?v=' + ASSET_VERSION;
+  }
+
+  // Diamond render controls. Tweak these first when balancing the stone:
+  // IOR = optical bend, roughness = micro-softening, env = brightness,
+  // thickness = screen-space refraction depth, dispersion = subtle RGB fire.
+  var DIAMOND_RENDER_PARAMS = {
+    diamondIOR: 2.42,
+    diamondRoughness: 0.008,
+    diamondEnvIntensity: 4.25,
+    diamondThickness: 0.085,
+    diamondDispersionStrength: 0.024
+  };
+
+  // Central PBR material tuning for jewelry. These values are intentionally easy
+  // to adjust: color, roughness, metalness and envMapIntensity define the metal
+  // read; diamond uniforms below control IOR, dispersion and reflective fire.
+  var JEWELRY_MATERIALS = {
+    metal_yellow: {
+      color: 0xd4af37,
+      metalness: 1,
+      roughness: 0.17,
+      envMapIntensity: 3.45
+    },
+    metal_white: {
+      color: 0xe8e8e3,
+      metalness: 1,
+      roughness: 0.14,
+      envMapIntensity: 3.65
+    },
+    metal_rose: {
+      color: 0xc58a7a,
+      metalness: 1,
+      roughness: 0.17,
+      envMapIntensity: 3.55
+    },
+    metal_platinum: {
+      color: 0xc9c9c5,
+      metalness: 1,
+      roughness: 0.12,
+      envMapIntensity: 3.8
+    },
+    diamond_center: {
+      ior: DIAMOND_RENDER_PARAMS.diamondIOR,
+      roughness: DIAMOND_RENDER_PARAMS.diamondRoughness,
+      thickness: DIAMOND_RENDER_PARAMS.diamondThickness,
+      chromaticAberration: DIAMOND_RENDER_PARAMS.diamondDispersionStrength,
+      envMapIntensity: DIAMOND_RENDER_PARAMS.diamondEnvIntensity,
+      fresnelPower: 4.45,
+      opacity: 1
+    }
+  };
+
+  var METAL_MATERIAL_KEY = {
+    yellow: 'metal_yellow',
+    white: 'metal_white',
+    rose: 'metal_rose',
+    platinum: 'metal_platinum'
   };
 
   var BASE_PRICE = { yellow: 3800, white: 4200, rose: 4000, platinum: 5500 };
@@ -35,6 +92,14 @@
         price: 250,
         file: './assets/models/bandas/banda-base-02.glb',
         transform: { scale: 0.1, rotation: [-Math.PI / 2, 0, 0], position: [0, 0, 0] }
+      },
+      {
+        id: 'banda-premium',
+        label: 'Banda Premium',
+        caption: 'Premium',
+        price: 950,
+        file: versionedAsset('./assets/models/bandas/banda-premium.glb'),
+        transform: { scale: 0.1, rotation: [0, 0, 0], position: [0, 0.036, 0] }
       }
     ],
     engastes: [
@@ -53,6 +118,14 @@
         price: 420,
         file: './assets/models/engastes/engaste-leaf.glb',
         transform: { scale: 0.1, rotation: [-Math.PI / 2, 0, 0], position: [0, 0, 0], anchorBottom: 6.214, stoneOffset: [0, -0.20, 0], stoneScale: 1.28 }
+      },
+      {
+        id: 'engaste-garras-premium',
+        label: 'Garras Premium',
+        caption: 'Premium',
+        price: 880,
+        file: versionedAsset('./assets/models/engastes/engaste-garras-premium.glb'),
+        transform: { scale: 0.092, rotation: [0, 0, 0], position: [0, 0.055, 0], anchorBottom: 6.214, stoneOffset: [0, 0, 0], stoneScale: 1 }
       }
     ],
     piedras: [
@@ -81,6 +154,19 @@
           position: [0, -0.015, 0],
           anchorBottom: 10.70
         }
+      },
+      {
+        id: 'diamante-premium',
+        label: 'Diamante Premium',
+        caption: 'Premium',
+        price: 1250,
+        file: versionedAsset('./assets/models/piedras/diamante-premium.glb'),
+        transform: {
+          scale: 0.081,
+          rotation: [0, 0, 0],
+          position: [-0.006, 0.245, -0.002],
+          anchorBottom: 10.70
+        }
       }
     ]
   };
@@ -92,11 +178,14 @@
   };
 
   var state = {
-    metal: 'yellow',
+    metal: 'rose',
+    bandMetal: 'rose',
+    settingMetal: 'rose',
+    centerStoneMaterial: 'diamond_center',
     carat: 1.0,
-    banda: MODEL_LIBRARY.bandas[0].id,
-    engaste: MODEL_LIBRARY.engastes[0].id,
-    piedra: MODEL_LIBRARY.piedras[0].id
+    banda: 'banda-premium',
+    engaste: 'engaste-garras-premium',
+    piedra: 'diamante-premium'
   };
 
   var canvas = document.getElementById('three-canvas');
@@ -121,15 +210,16 @@
 
   var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  if (THREE.ColorManagement) THREE.ColorManagement.enabled = true;
   renderer.physicallyCorrectLights = true;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
+  renderer.toneMappingExposure = 1.46;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
   var scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xb0b0b0);
+  scene.background = new THREE.Color(0xb7b7b5);
 
   var camera = new THREE.PerspectiveCamera(32, 1, 0.01, 500);
   var controls = new THREE.OrbitControls(camera, canvas);
@@ -138,78 +228,70 @@
 
   var shadowPlane = new THREE.Mesh(
     new THREE.PlaneGeometry(8, 8),
-    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.55 })
+    new THREE.ShadowMaterial({ color: 0x000000, opacity: 0.30 })
   );
   shadowPlane.rotation.x = -Math.PI / 2;
   shadowPlane.position.set(0, -1.28, 0);
   shadowPlane.receiveShadow = true;
   scene.add(shadowPlane);
 
-  // PMREM env map for metal materials only — neutral warm tones so gold looks gold.
-  // Vivid studio colors live exclusively in diamondEnvRaw (used by the diamond shader).
+  // Procedural studio PMREM. This replaces a flat environment with large reflected
+  // softboxes and dark cards, which is what makes polished jewelry read as metal.
   var pmrem = new THREE.PMREMGenerator(renderer);
   var envScene = new THREE.Scene();
   [
-    [[70,  10,  20],  0xd8cec1],  // warm white — key side
-    [[-70, 14, -18],  0xc3ced8],  // cool white — fill side
-    [[0,   80,  18],  0xf7f5f1],  // overhead: bright neutral
-    [[0,  -70,   0],  0x262220],  // floor: dark charcoal
-    [[0,    8,  70],  0xbcae9d],  // front: warm neutral
-    [[0,    0, -70],  0x6f6459],  // back: mid warm brown
+    [[58,  14,  22],  0xffffff, 42, 20], // broad white key strip
+    [[-58, 18, -18],  0xf6f8ff, 38, 20], // cool fill strip
+    [[0,   72,  18],  0xfffcf5, 48, 24], // warm overhead softbox
+    [[0,  -60,   0],  0x7a7771, 80, 80], // softened floor card
+    [[0,    8,  62],  0xfff7ee, 46, 26], // large warm front card
+    [[0,    2, -60],  0x85817a, 42, 26], // softened rear card
+    [[38,  -2,  44],  0xf8d7bd, 26, 18], // warm rose/gold accent
+    [[-38, -2,  44],  0xf0f4f8, 26, 18], // cool silver accent
+    [[0,    0,  46],  0xffffff, 70, 16], // long front ribbon highlight
+    [[0,   18,  38],  0xffffff, 58, 26]  // frontal overhead broad fill
   ].forEach(function (face) {
     var mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(160, 160),
+      new THREE.PlaneGeometry(face[2], face[3]),
       new THREE.MeshBasicMaterial({ color: face[1], side: THREE.DoubleSide })
     );
     mesh.position.set(face[0][0], face[0][1], face[0][2]);
     mesh.lookAt(0, 0, 0);
     envScene.add(mesh);
   });
-  scene.environment = pmrem.fromScene(envScene, 0).texture;
+  var studioEnvironment = pmrem.fromScene(envScene, 0.04).texture;
+  scene.environment = studioEnvironment;
 
-  // Diamond env map — spots sized to cover large facets (signature stone) without
-  // blending into a white mass. Dark blue base prevents absolute-black reflections.
+  // Diamond env map — mostly white/gray studio reflections with only tiny color
+  // hints. The goal is a clean premium diamond, not a holographic rainbow stone.
   var diamondEnvRaw = (function () {
     var c = document.createElement('canvas');
     c.width = 512; c.height = 512;
     var ctx = c.getContext('2d');
-    // Dark blue-violet base — no pure black so large facets always have some color
-    ctx.fillStyle = '#08080f';
+    // Neutral charcoal base gives facets contrast without turning them neon.
+    ctx.fillStyle = '#1b1c20';
     ctx.fillRect(0, 0, 512, 512);
     [
-      // White hot spots — vivid cores, steep falloff to keep separation
-      { x: 90,  y: 90,  r: 80,  col: '255,255,255' },
-      { x: 422, y: 90,  r: 70,  col: '255,255,255' },
-      { x: 256, y: 34,  r: 62,  col: '255,255,255' },
-      { x: 90,  y: 422, r: 58,  col: '255,255,255' },
-      { x: 422, y: 422, r: 54,  col: '255,255,255' },
-      // Cyan
-      { x: 298, y: 98,  r: 88,  col: '0,225,255'   },
-      { x: 118, y: 358, r: 76,  col: '0,195,240'   },
-      { x: 430, y: 260, r: 68,  col: '30,210,255'  },
-      // Orange / gold
-      { x: 338, y: 458, r: 84,  col: '255,155,0'   },
-      { x: 168, y: 238, r: 72,  col: '255,115,10'  },
-      { x: 460, y: 390, r: 62,  col: '255,140,0'   },
-      // Magenta / pink
-      { x: 85,  y: 278, r: 80,  col: '255,65,160'  },
-      { x: 375, y: 428, r: 68,  col: '215,45,195'  },
-      // Sky blue
-      { x: 178, y: 148, r: 76,  col: '95,180,255'  },
-      { x: 448, y: 148, r: 64,  col: '85,160,245'  },
-      // Violet / indigo
-      { x: 338, y: 318, r: 72,  col: '75,55,240'   },
-      { x: 200, y: 480, r: 60,  col: '110,40,220'  },
-      // Green
-      { x: 198, y: 398, r: 66,  col: '30,210,75'   },
-      // Red
-      { x: 460, y: 370, r: 60,  col: '255,30,50'   },
+      // White softboxes and gray cards: these define the premium crystalline read.
+      { x: 92,  y: 92,  r: 98,  col: '255,255,255', strength: 1.0 },
+      { x: 420, y: 88,  r: 92,  col: '255,255,255', strength: 1.0 },
+      { x: 256, y: 34,  r: 84,  col: '255,255,252', strength: 0.96 },
+      { x: 118, y: 396, r: 94,  col: '240,244,250', strength: 0.64 },
+      { x: 424, y: 400, r: 90,  col: '250,247,241', strength: 0.58 },
+      { x: 260, y: 260, r: 112, col: '226,232,240', strength: 0.48 },
+      { x: 252, y: 126, r: 64,  col: '255,255,255', strength: 0.74 },
+      { x: 238, y: 314, r: 66,  col: '250,252,255', strength: 0.54 },
+      // Tiny spectral hints only, kept weak so facets stay white/crystal.
+      { x: 144, y: 210, r: 40,  col: '120,205,255', strength: 0.11 },
+      { x: 342, y: 182, r: 38,  col: '255,216,135', strength: 0.10 },
+      { x: 372, y: 326, r: 32,  col: '210,150,235', strength: 0.055 }
     ].forEach(function (l) {
       var g = ctx.createRadialGradient(l.x, l.y, 0, l.x, l.y, l.r);
-      g.addColorStop(0,    'rgba(' + l.col + ',1)');
-      g.addColorStop(0.18, 'rgba(' + l.col + ',0.85)');
-      g.addColorStop(0.45, 'rgba(' + l.col + ',0.35)');
-      g.addColorStop(0.72, 'rgba(' + l.col + ',0.08)');
+      var strength = l.strength || 0.3;
+      g.addColorStop(0,    'rgba(' + l.col + ',' + strength + ')');
+      g.addColorStop(0.22, 'rgba(' + l.col + ',' + (strength * 0.72) + ')');
+      g.addColorStop(0.52, 'rgba(' + l.col + ',' + (strength * 0.22) + ')');
+      g.addColorStop(0.82, 'rgba(' + l.col + ',' + (strength * 0.04) + ')');
       g.addColorStop(1,    'rgba(' + l.col + ',0)');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, 512, 512);
@@ -218,6 +300,49 @@
     tex.needsUpdate = true;
     return tex;
   }());
+  var diamondEnvironmentMap = diamondEnvRaw;
+  // Active diamond ShaderMaterial instances — updated each frame with uSceneTexture.
+  // The optional HDRI is used only by the diamond shader, not by scene.environment,
+  // so band and setting metals keep their established studio-metal reflections.
+  var diamondShaderMaterials = [];
+
+  function updateDiamondEnvironment(map, isRGBE) {
+    diamondEnvironmentMap = map || diamondEnvRaw;
+    diamondShaderMaterials.forEach(function (mat) {
+      if (mat.uniforms && mat.uniforms.uEnvMap) {
+        mat.uniforms.uEnvMap.value = diamondEnvironmentMap;
+        mat.uniforms.uEnvMapIsRGBE.value = isRGBE ? 1 : 0;
+        mat.needsUpdate = true;
+      }
+    });
+  }
+
+  function loadHDRIEnvironment() {
+    if (!THREE.RGBELoader) return;
+    var loadHDR = function () {
+      new THREE.RGBELoader()
+        .setDataType(THREE.UnsignedByteType)
+        .load(STUDIO_HDR_PATH, function (texture) {
+          texture.mapping = THREE.EquirectangularReflectionMapping;
+          updateDiamondEnvironment(texture, true);
+        }, undefined, function () {
+          updateDiamondEnvironment(diamondEnvRaw, false);
+        });
+    };
+
+    if (window.fetch) {
+      window.fetch(STUDIO_HDR_PATH, { method: 'HEAD' })
+        .then(function (response) {
+          if (response.ok) loadHDR();
+        })
+        .catch(function () {
+          updateDiamondEnvironment(diamondEnvRaw, false);
+        });
+    } else {
+      loadHDR();
+    }
+  }
+  loadHDRIEnvironment();
 
   // RenderTarget captures the scene (without diamond) for screen-space refraction
   var sceneRenderTarget = new THREE.WebGLRenderTarget(512, 512, {
@@ -226,19 +351,16 @@
     format: THREE.RGBFormat
   });
 
-  // Active diamond ShaderMaterial instances — updated each frame with uSceneTexture
-  var diamondShaderMaterials = [];
-
   // Luces de escena — todas neutras/blancas para no teñir el metal.
   // Los colores de estudio (cyan, naranja, magenta) viven solo en el env map
   // y en diamondEnvRaw: afectan reflexiones/refracciones sin pintar el metal.
 
-  // AMBIENT — base mínima
+  // AMBIENT — very low; the PMREM softboxes should do most of the reflective work.
   scene.add(new THREE.AmbientLight(0xffffff, 0.18));
 
-  // KEY — luz principal, blanco puro, define forma y brillos nítidos
-  var key = new THREE.DirectionalLight(0xffffff, 1.5);
-  key.position.set(6, 8, 4);
+  // KEY — large, clean studio highlight for polished metal edges.
+  var key = new THREE.DirectionalLight(0xffffff, 2.55);
+  key.position.set(4.5, 8.5, 6.5);
   key.castShadow = true;
   key.shadow.mapSize.width = 2048;
   key.shadow.mapSize.height = 2048;
@@ -251,15 +373,39 @@
   key.shadow.bias = -0.0005;
   scene.add(key);
 
-  // FILL — blanco-frío muy suave, rellena sombras sin teñir
-  var fill = new THREE.DirectionalLight(0xeef4ff, 0.38);
-  fill.position.set(-5, 3, 3);
+  // FILL — cool and soft, preserves contrast while keeping white metals crisp.
+  var fill = new THREE.DirectionalLight(0xf9fbff, 1.55);
+  fill.position.set(-4.2, 5.0, 6.2);
   scene.add(fill);
 
-  // RIM — blanco-cálido muy suave, separa el anillo del fondo oscuro
-  var rim = new THREE.DirectionalLight(0xfff6ee, 0.3);
-  rim.position.set(-8, 1, -8);
+  var frontFill = new THREE.DirectionalLight(0xfffbf5, 0.75);
+  frontFill.position.set(0, 2.8, 6.5);
+  scene.add(frontFill);
+
+  // RIM — long warm reflection along rose/yellow gold silhouettes.
+  var rim = new THREE.DirectionalLight(0xfff4ea, 0.58);
+  rim.position.set(-8, 3, -7);
   scene.add(rim);
+
+  if (THREE.RectAreaLight && THREE.RectAreaLightUniformsLib) {
+    THREE.RectAreaLightUniformsLib.init();
+    var topSoftbox = new THREE.RectAreaLight(0xffffff, 3.2, 5.2, 2.4);
+    topSoftbox.position.set(0, 4.6, 2.8);
+    topSoftbox.lookAt(0, 0.7, 0);
+    scene.add(topSoftbox);
+    var diamondTableSoftbox = new THREE.RectAreaLight(0xffffff, 2.0, 2.8, 1.35);
+    diamondTableSoftbox.position.set(0, 3.35, 3.7);
+    diamondTableSoftbox.lookAt(0, 1.25, 0);
+    scene.add(diamondTableSoftbox);
+    var frontRibbon = new THREE.RectAreaLight(0xfff8f0, 2.85, 6.8, 1.35);
+    frontRibbon.position.set(0, 1.15, 4.35);
+    frontRibbon.lookAt(0, 0.55, 0);
+    scene.add(frontRibbon);
+    var sideStrip = new THREE.RectAreaLight(0xffffff, 1.6, 1.1, 4.2);
+    sideStrip.position.set(-3.8, 1.4, 2.4);
+    sideStrip.lookAt(0, 0.45, 0);
+    scene.add(sideStrip);
+  }
 
   var loader = new THREE.GLTFLoader();
   var modelCache = {};
@@ -297,16 +443,46 @@
     loading.style.display = active ? 'flex' : 'none';
   }
 
-  function makeMetalMat(config) {
+  function makeMetalMat(metalKey) {
+    var config = JEWELRY_MATERIALS[METAL_MATERIAL_KEY[metalKey] || 'metal_yellow'];
     return new THREE.MeshPhysicalMaterial({
+      name: METAL_MATERIAL_KEY[metalKey] || 'metal_yellow',
       color: new THREE.Color(config.color),
-      metalness: 1,
+      metalness: config.metalness,
       roughness: config.roughness,
       envMapIntensity: config.envMapIntensity,
-      clearcoat: config.clearcoat,
-      clearcoatRoughness: config.clearcoatRoughness,
-      reflectivity: 1
+      clearcoat: 0,
+      clearcoatRoughness: 0,
+      reflectivity: 1,
+      side: THREE.DoubleSide
     });
+  }
+
+  function makeDiamondPhysicalFallback() {
+    var config = JEWELRY_MATERIALS.diamond_center;
+    var materialConfig = {
+      name: 'diamond_center_physical_fallback',
+      color: new THREE.Color(0xffffff),
+      metalness: 0,
+      roughness: config.roughness,
+      envMapIntensity: config.envMapIntensity,
+      transparent: true,
+      opacity: 0.98,
+      side: THREE.DoubleSide
+    };
+
+    // Three r128 supports these MeshPhysicalMaterial properties in modern browsers.
+    // They are left centralized here so the diamond can fall back gracefully if the
+    // custom shader is disabled during tuning.
+    materialConfig.transmission = 1;
+    materialConfig.thickness = config.thickness;
+    materialConfig.ior = config.ior;
+    materialConfig.attenuationColor = new THREE.Color(0xffffff);
+    materialConfig.attenuationDistance = 2.8;
+    materialConfig.specularIntensity = 0.95;
+    materialConfig.specularColor = new THREE.Color(0xffffff);
+
+    return new THREE.MeshPhysicalMaterial(materialConfig);
   }
 
   var DIAMOND_VERT = `
@@ -336,11 +512,13 @@ void main() {
 
 uniform sampler2D uSceneTexture;    // Scene without diamond (background for refraction)
 uniform sampler2D uEnvMap;          // High-contrast equirectangular env map
+uniform float     uEnvMapIsRGBE;    // 1 when uEnvMap comes from RGBELoader .hdr
 uniform float     uIOR;             // Index of refraction (2.417 = diamond, 1.5 = glass)
 uniform float     uThickness;       // Screen-space refraction strength
 uniform float     uChromaticAberration; // Blue refracts more than red (dispersion / fire)
 uniform float     uEnvMapIntensity; // Reflection brightness multiplier
 uniform float     uFresnelPower;    // Schlick exponent (5 = physically accurate)
+uniform float     uRoughness;       // Micro-softening for non-mirror diamond reflections
 
 varying vec3 vWorldNormal;
 varying vec3 vViewNormal;
@@ -348,11 +526,19 @@ varying vec3 vViewPos;
 varying vec3 vWorldViewDir;
 varying vec4 vClipPos;
 
+vec3 decodeEnvironmentTexel(vec4 texel) {
+  if (uEnvMapIsRGBE > 0.5) {
+    vec3 hdr = texel.rgb * exp2(texel.a * 255.0 - 128.0);
+    return hdr / (hdr + vec3(1.0));
+  }
+  return texel.rgb;
+}
+
 // Sample equirectangular 2D texture from a 3D direction vector
 vec3 sampleEquirect(sampler2D map, vec3 dir) {
   float u = atan(dir.z, dir.x) / (2.0 * PI) + 0.5;
   float v = asin(clamp(dir.y, -1.0, 1.0)) / PI + 0.5;
-  return texture2D(map, vec2(u, v)).rgb;
+  return decodeEnvironmentTexel(texture2D(map, vec2(u, v)));
 }
 
 // Schlick approximation: F0 derived from IOR, rises to 1 at grazing angle
@@ -382,45 +568,75 @@ void main() {
   float validRefract = step(0.001, length(rDir));
   vec2 refractOffset = rDir.xy * uThickness * validRefract;
 
-  // --- Chromatic aberration: blue light refracts more than red (like a real prism) ---
-  float ca = uChromaticAberration * 0.5;
+  // --- Subtle chromatic aberration ---
+  // Keep dispersion restrained; high values make the diamond look holographic.
+  float ca = uChromaticAberration * 0.24;
   float bkgR = texture2D(uSceneTexture, clamp(screenUV + refractOffset * (1.0 - ca), 0.002, 0.998)).r;
   float bkgG = texture2D(uSceneTexture, clamp(screenUV + refractOffset,              0.002, 0.998)).g;
   float bkgB = texture2D(uSceneTexture, clamp(screenUV + refractOffset * (1.0 + ca), 0.002, 0.998)).b;
   vec3 refractColor = vec3(bkgR, bkgG, bkgB);
+  float refractLuma = dot(refractColor, vec3(0.299, 0.587, 0.114));
+  // Real diamonds do not behave like a chrome mirror. Keep scene refraction as
+  // optical depth, but bleach/desaturate it so prongs are not copied literally.
+  refractColor = mix(vec3(refractLuma), refractColor, 0.22);
+  refractColor = mix(refractColor, vec3(0.985, 0.992, 1.0), 0.30);
 
-  // --- Reflection with chromatic dispersion ---
-  // Offset the reflection direction slightly per channel to simulate prism dispersion
+  // --- Reflection with very subtle chromatic dispersion ---
   vec3 rD  = reflect(-V_w, N_w);
-  float cd = uChromaticAberration * 0.06;
+  float cd = uChromaticAberration * 0.026;
   // Perturb along a tangent direction so R/B spread apart in the env map
   vec3 tang = normalize(cross(N_w, vec3(0.0, 1.0, 0.001)));
   vec3 reflR = sampleEquirect(uEnvMap, normalize(rD + tang *  cd));
   vec3 reflG = sampleEquirect(uEnvMap, rD);
   vec3 reflB = sampleEquirect(uEnvMap, normalize(rD - tang *  cd));
   // Tiny ambient floor prevents pure-black on large facets without washing out colors
-  vec3 reflectColor = (vec3(reflR.r, reflG.g, reflB.b) + vec3(0.012, 0.012, 0.02)) * uEnvMapIntensity;
+  vec3 reflectColor = (vec3(reflR.r, reflG.g, reflB.b) + vec3(0.034)) * uEnvMapIntensity;
+  float reflectLuma = dot(reflectColor, vec3(0.299, 0.587, 0.114));
+  reflectColor = mix(vec3(reflectLuma), reflectColor, 0.28);
+  reflectColor = pow(clamp(reflectColor, 0.0, 4.0), vec3(0.86));
+  reflectColor *= 1.0 - clamp(uRoughness * 5.0, 0.0, 0.18);
+
+  // Faceted internal contrast: white/gray/charcoal shards from normals and view,
+  // not literal mirror reflections. This keeps the cut readable and crystalline.
+  float facetA = pow(abs(dot(N_w, normalize(vec3(0.45, 0.82, 0.35)))), 7.0);
+  float facetB = pow(abs(dot(N_w, normalize(vec3(-0.72, 0.28, 0.62)))), 5.0);
+  float pavilion = pow(clamp(1.0 - abs(dot(N_w, V_w)), 0.0, 1.0), 2.8);
+  float sparkle = pow(max(facetA, facetB), 2.08);
+  float fireMask = pow(clamp(facetA * 0.65 + facetB * 0.85 + pavilion * 0.15, 0.0, 1.0), 3.6);
+  vec3 spectralFire = vec3(0.70, 0.92, 1.0) * fireMask * uChromaticAberration * 3.2;
+  spectralFire += vec3(1.0, 0.78, 0.36) * pow(facetB, 4.2) * uChromaticAberration * 2.5;
+  vec3 internalFacets = mix(vec3(0.08, 0.09, 0.105), vec3(1.0), clamp(facetA + facetB * 0.86, 0.0, 1.0));
+  internalFacets = mix(internalFacets, vec3(0.86, 0.89, 0.94), pavilion * 0.18);
+  internalFacets += vec3(1.0, 0.985, 0.95) * sparkle * 0.42;
 
   // --- Fresnel blend: grazing angles fully reflective ---
-  // Floor of 0.18 ensures visible color even on face-on facets against a dark background
-  float F = max(schlickFresnel(max(dot(V_w, N_w), 0.0), uIOR), 0.18);
+  // Low floor avoids chrome-like direct reflection; grazing facets still sparkle.
+  float F = max(schlickFresnel(max(dot(V_w, N_w), 0.0), uIOR), 0.088);
 
-  gl_FragColor = vec4(mix(refractColor, reflectColor, F), 1.0);
+  vec3 diamondColor = mix(refractColor, internalFacets, 0.38);
+  diamondColor = mix(diamondColor, reflectColor, F * 0.88);
+  diamondColor += vec3(1.0) * sparkle * 0.12;
+  diamondColor += spectralFire;
+  gl_FragColor = vec4(diamondColor, 1.0);
 }
 `;
 
   function makeDiamondShader() {
+    var config = JEWELRY_MATERIALS.diamond_center;
     var mat = new THREE.ShaderMaterial({
+      name: 'diamond_center',
       vertexShader: DIAMOND_VERT,
       fragmentShader: DIAMOND_FRAG,
       uniforms: {
         uSceneTexture:        { value: null },
-        uEnvMap:              { value: diamondEnvRaw },
-        uIOR:                 { value: 2.417 },
-        uThickness:           { value: 0.42 },
-        uChromaticAberration: { value: 0.22 },
-        uEnvMapIntensity:     { value: 11.0 },
-        uFresnelPower:        { value: 4.0 }
+        uEnvMap:              { value: diamondEnvironmentMap },
+        uEnvMapIsRGBE:        { value: 0 },
+        uIOR:                 { value: config.ior },
+        uThickness:           { value: config.thickness },
+        uChromaticAberration: { value: config.chromaticAberration },
+        uEnvMapIntensity:     { value: config.envMapIntensity },
+        uFresnelPower:        { value: config.fresnelPower },
+        uRoughness:           { value: config.roughness }
       },
       side: THREE.DoubleSide
     });
@@ -431,6 +647,7 @@ void main() {
   function applyMaterial(group, mat, receiveShadow) {
     group.traverse(function (child) {
       if (!child.isMesh) return;
+      if (child.material && child.material.dispose) child.material.dispose();
       child.material = mat.clone();
       child.castShadow = true;
       child.receiveShadow = receiveShadow;
@@ -466,10 +683,10 @@ void main() {
   function applyState() {
     if (!currentMeshes.banda || !currentMeshes.engaste || !currentMeshes.piedra) return;
 
-    var metalConfig = METAL[state.metal];
-    var metalMaterial = makeMetalMat(metalConfig);
-    applyMaterial(currentMeshes.banda, metalMaterial, true);
-    applyMaterial(currentMeshes.engaste, metalMaterial, true);
+    var bandMetalMaterial = makeMetalMat(state.bandMetal || state.metal);
+    var settingMetalMaterial = makeMetalMat(state.settingMetal || state.metal);
+    applyMaterial(currentMeshes.banda, bandMetalMaterial, true);
+    applyMaterial(currentMeshes.engaste, settingMetalMaterial, true);
 
     // Dispose previous diamond shaders and clear tracking array
     diamondShaderMaterials.forEach(function (m) { m.dispose(); });
@@ -714,6 +931,8 @@ void main() {
       var button = document.getElementById('btn-metal-' + metalKey);
       button.addEventListener('click', function () {
         state.metal = metalKey;
+        state.bandMetal = metalKey;
+        state.settingMetal = metalKey;
         document.querySelectorAll('.metal-btn').forEach(function (item) {
           item.classList.remove('active');
         });

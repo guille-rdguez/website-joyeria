@@ -47,7 +47,7 @@
     <section class="section">
       <div class="section-title">Metal</div>
       <div class="metal-options">
-        <button class="metal-btn active" id="btn-metal-yellow" type="button">
+        <button class="metal-btn" id="btn-metal-yellow" type="button">
           <div class="metal-swatch swatch-yellow"></div>
           <span class="metal-name">Oro<br>Amarillo</span>
         </button>
@@ -55,7 +55,7 @@
           <div class="metal-swatch swatch-white"></div>
           <span class="metal-name">Oro<br>Blanco</span>
         </button>
-        <button class="metal-btn" id="btn-metal-rose" type="button">
+        <button class="metal-btn active" id="btn-metal-rose" type="button">
           <div class="metal-swatch swatch-rose"></div>
           <span class="metal-name">Oro<br>Rosa</span>
         </button>
@@ -69,7 +69,7 @@
     <section class="section">
       <div class="section-head">
         <div class="section-title">Bandas</div>
-        <div class="section-current" id="current-band-label">Solitario Clasico</div>
+        <div class="section-current" id="current-band-label">Banda Premium</div>
       </div>
       <div class="option-grid" id="band-options"></div>
     </section>
@@ -77,7 +77,7 @@
     <section class="section">
       <div class="section-head">
         <div class="section-title">Engaste</div>
-        <div class="section-current" id="current-setting-label">Garras Clasicas</div>
+        <div class="section-current" id="current-setting-label">Garras Premium</div>
       </div>
       <div class="option-grid" id="setting-options"></div>
     </section>
@@ -85,7 +85,7 @@
     <section class="section">
       <div class="section-head">
         <div class="section-title">Piedra</div>
-        <div class="section-current" id="current-stone-label">Diamante Base</div>
+        <div class="section-current" id="current-stone-label">Diamante Premium</div>
       </div>
       <div class="option-grid" id="stone-options"></div>
       <p class="section-note">Las variantes nuevas pueden necesitar microajustes visuales finos.</p>
@@ -107,21 +107,21 @@
       <div class="selection-summary">
         <div class="selection-row">
           <span>Banda</span>
-          <strong id="summary-band">Solitario Clasico</strong>
+          <strong id="summary-band">Banda Premium</strong>
         </div>
         <div class="selection-row">
           <span>Engaste</span>
-          <strong id="summary-setting">Garras Clasicas</strong>
+          <strong id="summary-setting">Garras Premium</strong>
         </div>
         <div class="selection-row">
           <span>Piedra</span>
-          <strong id="summary-stone">Diamante Base</strong>
+          <strong id="summary-stone">Diamante Premium</strong>
         </div>
       </div>
 
       <div class="summary-price">
         <span class="price-label">Precio estimado</span>
-        <span class="price-value" id="price-display"><sup>$</sup>4,600</span>
+        <span class="price-value" id="price-display"><sup>$</sup>7,880</span>
       </div>
 
       <button class="cta-btn" id="quote-btn" type="button">Solicitar cotizacion →</button>
@@ -132,7 +132,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/RGBELoader.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="./assets/js/configurator.js"></script>
+<script src="./assets/js/configurator.js?v=diamond-hdri-1"></script>
 </body>
 </html>
